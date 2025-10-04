@@ -1,0 +1,46 @@
+Pipeline:
+    # Only one of the following LLM service configurations will be active based on this setting:
+    # - "NvidiaLLMService" - Uses the NvidiaLLMService configuration
+    # - "NvidiaRAGService" - Uses the NvidiaRAGService configuration
+    # - "OpenAILLMService" - Uses the OpenAILLMService configuration
+    llm_processor: "NvidiaRAGService" # OR NvidiaLLMService OR NvidiaRAGService OR OpenAILLMService
+    filler:
+        - "Hold on a moment"
+
+## System Prompt is set by the agent backend, we don't need to set the system prompt here
+OpenAILLMContext:
+    name: "Assistant"
+    
+
+# This configuration is only used when llm_processor is set to "NvidiaRAGService"
+NvidiaRAGService:
+    max_tokens: 1024
+    rag_server_url: "http://app-server-healthcare-assistant:8081"
+    
+
+RivaASRService:
+    server: "riva-asr-parakeet:50052"
+    #server: "grpc.nvcf.nvidia.com:443"
+    language: "en-US"
+    sample_rate: 16000
+    model: "parakeet-1.1b-en-US-asr-streaming-silero-vad-sortformer"
+    #function_id: 1598d209-5e27-4d3c-8079-4751568b1081
+    
+RivaTTSService:
+    server: "riva-tts-magpie:50051"
+    #server: "grpc.nvcf.nvidia.com:443"
+    language: "en-US"
+    voice_id: "Magpie-Multilingual.EN-US.Mia"
+    model: "magpie_tts_ensemble-Magpie-Multilingual"
+    #function_id: 877104f7-e885-42b9-8de8-f6e4c6303969
+
+
+# This configuration is only used when llm_processor is set to "NvidiaLLMService"
+# Currently not used
+NvidiaLLMService:
+    model: "meta/llama-3.1-8b-instruct"
+
+# This configuration is only used when llm_processor is set to "OpenAILLMService"
+# Currently not used
+OpenAILLMService:
+    model: "gpt-4o"

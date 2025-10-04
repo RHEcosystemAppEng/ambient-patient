@@ -1,0 +1,229 @@
+services:
+  app-server:
+    container_name: app-server-healthcare-assistant
+    image: app-server-healthcare-assistant:${TAG:-latest}
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    environment:
+      - WATCHFILES_FORCE_POLLING=true
+    command: python3 chain_server/chain_server.py --assistant intake --port 8081
+    ports:
+    - "8081:8081"
+    expose:
+    - "8081"
+    volumes:
+      - ./graph_definitions/graph_images:/graph_images
+      - ./app_output_files:/app/app_output_files
+      - ./graph_definitions:/app/graph_definitions
+      - ./nmgr-config-store:/app/nmgr-config-store
+      - ./chain_server:/app/chain_server
+      - ./vars.env:/env_vars/vars.env
+    shm_size: 5gb
+    networks:
+      - healthcare-agent-network
+    
+
+  patient-intake-ui:
+    container_name: patient-intake-ui
+    image: patient-intake-ui:${TAG:-latest}
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    environment:
+      - WATCHFILES_FORCE_POLLING=true
+    command: python3 graph_definitions/graph_patient_intake_only.py --port 7860
+    ports:
+    - "7860:7860"
+    expose:
+    - "7860"
+    volumes:
+      - ./graph_definitions/graph_images:/graph_images
+      - ./app_output_files:/app/app_output_files
+      - ./graph_definitions:/app/graph_definitions
+      - ./nmgr-config-store:/app/nmgr-config-store
+      - ./utils:/app/utils
+      - ./vars.env:/env_vars/vars.env
+    shm_size: 5gb
+    networks:
+      - healthcare-agent-network
+    
+
+  appointment-making-ui:
+    container_name: appointment-making-ui
+    image: appointment-making-ui:${TAG:-latest}
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    command: python3 graph_definitions/graph_appointment_making_only.py --port 7860
+    environment:
+      - WATCHFILES_FORCE_POLLING=true
+    ports:
+    - "7860:7860"
+    expose:
+    - "7860"
+    volumes:
+      - ./graph_definitions/graph_images:/graph_images
+      - ./graph_definitions:/app/graph_definitions
+      - ./nmgr-config-store:/app/nmgr-config-store
+      - ./utils:/app/utils
+      - ./vars.env:/env_vars/vars.env
+    shm_size: 5gb
+    networks:
+      - healthcare-agent-network
+    
+
+  medication-lookup-ui:
+    container_name: medication-lookup-ui
+    image: medication-lookup-ui:${TAG:-latest}
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    command: python3 graph_definitions/graph_medication_lookup_only.py --port 7860
+    environment:
+      - WATCHFILES_FORCE_POLLING=true
+    ports:
+    - "7860:7860"
+    expose:
+    - "7860"
+    volumes:
+      - ./graph_definitions/graph_images:/graph_images
+      - ./graph_definitions:/app/graph_definitions
+      - ./nmgr-config-store:/app/nmgr-config-store
+      - ./utils:/app/utils
+      - ./vars.env:/env_vars/vars.env
+    shm_size: 5gb
+    networks:
+      - healthcare-agent-network
+  
+
+  full-agent-ui:
+    container_name: full-agent-ui
+    image: full-agent-ui:${TAG:-latest}
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    command: python3 graph_definitions/graph.py --port 7860
+    environment:
+      - WATCHFILES_FORCE_POLLING=true
+    ports:
+    - "7860:7860"
+    expose:
+    - "7860"
+    volumes:
+      - ./graph_definitions/graph_images:/graph_images
+      - ./app_output_files:/app/app_output_files
+      - ./graph_definitions:/app/graph_definitions
+      - ./nmgr-config-store:/app/nmgr-config-store
+      - ./utils:/app/utils
+      - ./vars.env:/env_vars/vars.env
+    shm_size: 5gb
+    networks:
+      - healthcare-agent-network
+    
+
+  agent-instruct-llm:
+    container_name: agent-instruct-llm
+    image: nvcr.io/nim/meta/llama-3.3-70b-instruct:latest
+    volumes:
+    - agent-llm-cache:/opt/nim/.cache
+    user: "${USERID}"
+    ports:
+    - "8050:8000"
+    expose:
+    - "8000"
+    env_file: 
+      - path: ./vars.env
+        required: true
+    shm_size: 20gb
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              # Use 4 GPUs for if on A100s, 2 GPUs for if on H100s
+              device_ids: ['${AGENT_LLM_GPU_ID:-0,1,2,3}']
+              capabilities: [gpu] 
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import requests; requests.get('http://localhost:8000/v1/health/ready')"]
+      interval: 30s
+      timeout: 20s
+      retries: 100
+    networks:
+      - healthcare-agent-network
+
+
+  nemoguard-content-safety-llm:
+    container_name: nemoguard-content-safety-llm
+    image: nvcr.io/nim/nvidia/llama-3.1-nemoguard-8b-content-safety:1.10.1
+    volumes:
+    - nemoguard-content-safety-llm-cache:/opt/nim/.cache
+    user: "${USERID}"
+    ports:
+    - "8060:8000"
+    expose:
+    - "8000"
+    environment:
+      NIM_SERVED_MODEL_NAME: llama-3.1-nemoguard-8b-content-safety
+      NIM_CUSTOM_MODEL_NAME: llama-3.1-nemoguard-8b-content-safety
+    env_file: 
+      - path: ./vars.env
+        required: true
+    shm_size: 16gb
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['${NEMOGUARD_CONTENT_SAFETY_LLM_GPU_ID:-4}']
+              capabilities: [gpu] 
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import requests; requests.get('http://localhost:8000/v1/health/ready')"]
+      interval: 30s
+      timeout: 20s
+      retries: 100
+    networks:
+      - healthcare-agent-network
+    
+    
+  nemoguard-topic-control-llm:
+    container_name: nemoguard-topic-control-llm
+    image: nvcr.io/nim/nvidia/llama-3.1-nemoguard-8b-topic-control:1.10.1
+    volumes:
+    - nemoguard-topic-control-llm-cache:/opt/nim/.cache
+    user: "${USERID}"
+    ports:
+    - "8070:8000"
+    expose:
+    - "8000"
+    environment:
+      NIM_SERVED_MODEL_NAME: llama-3.1-nemoguard-8b-topic-control
+      NIM_CUSTOM_MODEL_NAME: llama-3.1-nemoguard-8b-topic-control
+    env_file: 
+      - path: ./vars.env
+        required: true
+    shm_size: 16gb
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['${NEMOGUARD_TOPIC_CONTRIL_LLM_GPU_ID:-5}']
+              capabilities: [gpu] 
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import requests; requests.get('http://localhost:8000/v1/health/ready')"]
+      interval: 30s
+      timeout: 20s
+      retries: 100
+    networks:
+      - healthcare-agent-network
+
+volumes:
+  agent-llm-cache:
+  nemoguard-content-safety-llm-cache:
+  nemoguard-topic-control-llm-cache:
+
+networks:
+  healthcare-agent-network:
+    name: healthcare-agent
+    driver: bridge

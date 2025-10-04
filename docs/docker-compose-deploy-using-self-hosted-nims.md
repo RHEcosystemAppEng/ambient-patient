@@ -1,0 +1,167 @@
+# Deployment Using Self Hosted NIMs
+
+We will bring up the services in this developer example via docker compose.
+
+## Prerequisite
+### Log in to NGC
+```sh
+docker login nvcr.io
+Username: $oauthtoken
+Password: < your private NGC key here >
+```
+You should see `Login Succeeded`.
+
+## Deployment Steps
+### 1. Set Environment Variables for Agent Backend
+Read through this section [1. Edit the vars.env file to set environment variables](../agent/README.md#1-edit-the-varsenv-file-to-set-environment-variables) in the agent/README to configure each of the environment variables needed in [agent/vars.env](../agent/vars.env) for bringing up the agent backend.
+
+- Since we are going to self host the agent LLM NIM, set both of the AGENT_LLM_BASE_URL and AGENT_LLM_MODEL differently:
+    ```sh
+    AGENT_LLM_BASE_URL="http://agent-instruct-llm:8000/v1"
+    AGENT_LLM_MODEL="meta-llama/llama-3.3-70b-instruct"
+    ```
+- If you intend to utilize the NemoGuard NIMs for Nemo Guardrails around your agent LLM, set 
+    ```sh
+    NEMO_GUARDRAILS_CONFIG_PATH=nmgr-config-store/patient-intake-nemoguard-self-hosted-nim
+    ```
+    Note the differences in base_url and model_name in the config.yml files for directories `patient-intake-nemoguard-self-hosted-nim` and `patient-intake-nemoguard`.
+
+### 2. Deploy Agent LLM NIM Locally
+```sh
+ # make sure you're in the ambient-patient directory
+ cd <path to your ambient-patient dir>
+```
+First set the GPU IDs for the Agent LLM NIM.
+```sh
+# if on A100s
+export AGENT_LLM_GPU_ID=0,1,2,3
+```
+Next bring up the agent LLM NIM:
+```sh
+docker compose -f agent/docker-compose.yaml up -d agent-instruct-llm
+```
+
+Run the following command that refreshes every 2 seconds in a seperate terminal tab to view the container that we have just brought up
+```sh
+watch -n 2 'docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"'
+```
+You should see the name `agent-instruct-lm` in the result:
+```sh
+NAMES                IMAGE                                            STATUS
+agent-instruct-llm   nvcr.io/nim/meta/llama-3.3-70b-instruct:latest   Up About a minute (health: starting)
+```
+Note: after the image is pulled, it should take less than 20 minutes for the status of the container to change from starting to healthy.
+
+### 3. Deploy NemoGuard NIMs Locally
+If you would like to utilize the NemoGuard NIMs for guardrailing your agent LLM with content safety and topic control, and you have set `NEMO_GUARDRAILS_CONFIG_PATH=nmgr-config-store/patient-intake-nemoguard-self-hosted-nim` in your vars.env file, first set the GPU IDs for the NemoGuard NIMs.
+```sh
+# if on A100s
+export NEMOGUARD_CONTENT_SAFETY_LLM_GPU_ID=4
+export NEMOGUARD_TOPIC_CONTRIL_LLM_GPU_ID=5
+```
+Next bring up the two NemoGuard NIMs deployment:
+```sh
+docker compose -f agent/docker-compose.yaml up -d nemoguard-content-safety-llm nemoguard-topic-control-llm 
+```
+You should see the new names `nemoguard-content-safety-llm` and `nemoguard-topic-control-llm` in the result:
+```sh
+NAMES                          IMAGE                                                            STATUS
+nemoguard-content-safety-llm              nvcr.io/nim/nvidia/llama-3.1-nemoguard-8b-content-safety:1.10.1   Up 7 minutes (healthy)
+nemoguard-topic-control-llm               nvcr.io/nim/nvidia/llama-3.1-nemoguard-8b-topic-control:1.10.1    Up 7 minutes (healthy)
+...
+```
+Note: after the images are pulled, it should take about 5 minutes for the status of the containers to change from starting to healthy.
+
+### 4. Deploy Agent Backend App Server
+
+ We will be bringing up the `app-server` service in [agent/docker-compose.yaml](../agent/docker-compose.yaml)
+
+ Double check that your environment variables are set correctly according to 
+ [1. Set Environment Variables for Agent Backend](#1-set-environment-variables-for-agent-backend), then bring up the app-server  service:
+ ```sh
+ docker compose -f agent/docker-compose.yaml up --build app-server
+ # or to detach from docker logs add -d:
+ docker compose -f agent/docker-compose.yaml up --build -d app-server
+ ```
+The build should take a few minutes. Note that after building the image for the first time, for bringing up this service again, if nothing in the source files changes and you don't need to rebuild the image, you could remove `--build` from the command:
+
+```sh
+docker compose -f agent/docker-compose.yaml up -d app-server
+```
+
+After the build finishes, you should see the new name `app-server-healthcare-assistant` in the results:
+```
+NAMES                             IMAGE                                                            STATUS
+app-server-healthcare-assistant   app-server-healthcare-assistant:latest                           Up 14 seconds
+...
+```
+
+### 5. Set Environment Variables for the ace-controller Voice UI
+
+Navigate to the [`ace-controller-voice-interface`](../ace-controller-voice-interface/) directory. Follow this section [Setup API Keys and Configure Service Settings](../ace-controller-voice-interface/README.md#setup-api-keys-and-configure-service-settings) in the ace-controller-voice-interface/README and set the variables in the `ace-controller-voice-interface/.env` file that you have copied over from [`ace-controller-voice-interface/ace_controller.env`](../ace-controller-voice-interface/ace_controller.env).
+
+- Set your API Keys
+- Since we're utilizing the public NVIDIA AI Endpoints, change the default   `CONFIG_PATH` to 
+
+    ```sh
+    CONFIG_PATH=./configs/config_riva_self_hosting.yaml
+    ```
+
+### 6. Deploy RIVA NIMS
+Set the GPU IDs for the RIVA NIMs.
+```sh
+# if on A100s
+export RIVA_ASR_NIM_GPU_ID=6
+export RIVA_TTS_NIM_GPU_ID=6
+```
+Bring up the RIVA NIMs.
+```sh
+docker compose --profile riva-nims-local -f ace-controller-voice-interface/docker-compose.yml up -d
+```
+You should see the additional names `voice-agents-webrtc-riva-tts-magpie-1` and `voice-agents-webrtc-riva-asr-parakeet-1` in the result:
+```sh
+NAMES                                     IMAGE                                                            STATUS
+voice-agents-webrtc-riva-tts-magpie-1     nvcr.io/nim/nvidia/magpie-tts-multilingual:1.3.0                 Up 6 minutes (healthy)
+voice-agents-webrtc-riva-asr-parakeet-1   nvcr.io/nim/nvidia/parakeet-1-1b-ctc-en-us:1.3.0                 Up 6 minutes (healthy)
+...
+```
+Note: after the images are pulled, it should take about 6 minutes for the status of the containers to change from starting to healthy.
+
+### 7. Deploy Voice UI Powered by ace-controller
+**Note before proceeding!** When deploying on cloud providers such as Brev, a Turn server is needed. A Turn server is needed for WebRTC connections when clients are behind NATs or firewalls that prevent direct peer-to-peer communication. Please see the [Turn Server](./turn-server.md) documentation on setting one up before proceeding with the Voice UI powered by ace-controller.
+
+ ```sh
+ # make sure you're in the directory ambient-patient
+ cd <path to your ambient-patient dir>
+ ```
+```bash
+docker compose --profile ace-controller -f ace-controller-voice-interface/docker-compose.yml up --build
+# or to detach from docker logs add -d:
+docker compose --profile ace-controller -f ace-controller-voice-interface/docker-compose.yml up --build -d
+```
+The build should take a few minutes. Remove `--build` from the command if you haven't change any sources files and are bringing up the services again:
+```sh
+docker compose --profile ace-controller -f ace-controller-voice-interface/docker-compose.yml up -d
+```
+You should see additional names `voice-agents-webrtc-ui-app` and `voice-agents-webrtc-python-app` in the results, for example:
+
+```sh
+NAMES                                     IMAGE                                                            STATUS
+voice-agents-webrtc-ui-app-1              voice-agents-webrtc-ui-app                                       Up 2 minutes
+voice-agents-webrtc-python-app-1          voice-agents-webrtc-python-app                                   Up 2 minutes (healthy)
+...
+```
+After the services are up, it should take less than a minute for the status to be healthy.
+
+
+### 8. Go to the Voice UI in your Web Browser
+First, to enable microphone access in Chrome, go to `chrome://flags/`, enable "Insecure origins treated as secure", add `http://<machine-ip>:4400` to the list, and restart Chrome.
+
+Next, go to `http://<machine-ip>:4400` in your browser to visit the voice UI. Upon loading, the page should look like the following:
+![](../ace-controller-voice-interface/assets/ui_at_start.png)
+
+### 9. Bring down services
+
+```sh
+docker compose -f agent/docker-compose.yaml  down
+```
