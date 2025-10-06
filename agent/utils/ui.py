@@ -35,8 +35,8 @@ def launch_demo_ui(assistant_graph):
     config = get_config_with_new_thread_id()
     async def interact(query: str, chat_history: List[Tuple[str, str]], full_response: str):
         last_answer, added_log = await print_event_async_stream(assistant_graph, query, config, max_length=1500)
-
-        yield "", chat_history + [[query, last_answer]], full_response + added_log, last_answer
+        updated_full_response = full_response + added_log if full_response else added_log
+        yield "", chat_history + [[query, last_answer]], updated_full_response, last_answer
 
     def new_thread():
         global config
