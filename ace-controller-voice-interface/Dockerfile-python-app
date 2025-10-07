@@ -2,7 +2,10 @@
 # SPDX-License-Identifier: BSD 2-Clause License
 
 # Base image
-FROM python:3.12-slim
+ARG BASE_IMAGE_URL=nvcr.io/nvidia/base/ubuntu
+ARG BASE_IMAGE_TAG=22.04_20240212
+
+FROM ${BASE_IMAGE_URL}:${BASE_IMAGE_TAG}
 
 # Image metadata
 LABEL maintainer="NVIDIA"
@@ -11,6 +14,7 @@ LABEL version="1.0"
 
 # Environment setup
 ENV PYTHONUNBUFFERED=1
+ENV DEBIAN_FRONTEND noninteractive
 
 # System dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -18,10 +22,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libglx-mesa0 \
     curl \
     ffmpeg \
-    git \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && pip install --no-cache-dir --upgrade pip uv
+    git 
+
+# install python3.12
+RUN apt update && \
+    apt install -y curl software-properties-common  && \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt update && apt install -y python3.12 && \
+    apt-get clean
+
+# Install pip for python3.12
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12
+
+RUN rm -rf /var/lib/apt/lists/* 
+
+# Install pip and uv
+RUN pip install --upgrade pip uv
 
 # clone the ace-controller repository 
 WORKDIR /

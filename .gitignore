@@ -2,4 +2,3 @@
 *__pycache__/
 ace-controller-voice-interface/audio_dumps/
 agent/app_output_files/
-agent/graph_definitions/graph_images/*.png
