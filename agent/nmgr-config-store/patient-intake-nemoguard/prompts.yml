@@ -23,7 +23,7 @@ prompts:
       <END UNSAFE CONTENT CATEGORIES>
 
       <BEGIN SAFE CONTENT CATEGORIES>
-      S1. it tells you personal and medicalinformation about the patient himself/hersef/themselves
+      S1. it tells you personal and medical information about the patient himself/hersef/themselves, including their symptoms (e.g. "I have a fever", "I've been having a headache")
       S2. it confirms with you the information that the user has provided
       S3. it asks you to start over
       S4. general small talk
