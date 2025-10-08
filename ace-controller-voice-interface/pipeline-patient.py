@@ -160,21 +160,26 @@ async def run_bot(webrtc_connection, ws: WebSocket):
         ipa_dict=ipa_dict,
     )
 
-    # Create audio_dumps directory if it doesn't exist
-    audio_dumps_dir = Path(__file__).parent / "audio_dumps"
-    audio_dumps_dir.mkdir(exist_ok=True)
+    enable_speculative_speech = os.getenv("DUMP_AUDIO_FILES", "false").lower() == "true"
+    if enable_speculative_speech:
+        # Create audio_dumps directory if it doesn't exist
+        audio_dumps_dir = Path(__file__).parent / "audio_dumps"
+        audio_dumps_dir.mkdir(exist_ok=True)
 
-    asr_recorder = AudioRecorder(
-        output_file=str(audio_dumps_dir / f"asr_recording_{stream_id}.wav"),
-        params=transport_params,
-        frame_type=InputAudioRawFrame,
-    )
+        asr_recorder = AudioRecorder(
+            output_file=str(audio_dumps_dir / f"asr_recording_{stream_id}.wav"),
+            params=transport_params,
+            frame_type=InputAudioRawFrame,
+        )
 
-    tts_recorder = AudioRecorder(
-        output_file=str(audio_dumps_dir / f"tts_recording_{stream_id}.wav"),
-        params=transport_params,
-        frame_type=TTSAudioRawFrame,
-    )
+        tts_recorder = AudioRecorder(
+            output_file=str(audio_dumps_dir / f"tts_recording_{stream_id}.wav"),
+            params=transport_params,
+            frame_type=TTSAudioRawFrame,
+        )
+    else:
+        asr_recorder = None
+        tts_recorder = None
 
     # Used to synchronize the user and bot transcripts in the UI
     stt_transcript_synchronization = UserTranscriptSynchronization()
@@ -207,13 +212,13 @@ async def run_bot(webrtc_connection, ws: WebSocket):
     pipeline = Pipeline(
         [
             transport.input(),  # Websocket input from client
-            asr_recorder,
+            *([asr_recorder] if asr_recorder else []),  # Include asr_recorder only if enabled
             stt,  # Speech-To-Text
             stt_transcript_synchronization,
             context_aggregator.user(),
             agent,  # Agent Backend
             tts,  # Text-To-Speech
-            tts_recorder,
+            *([tts_recorder] if tts_recorder else []),  # Include tts_recorder only if enabled
             *([tts_response_cacher] if tts_response_cacher else []),  # Include cacher only if enabled
             tts_transcript_synchronization,
             transcript_processor_output,

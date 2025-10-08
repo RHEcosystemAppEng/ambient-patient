@@ -195,6 +195,7 @@ def get_thread_config():
         "configurable": {
             # Checkpoints are accessed by thread_id
             "thread_id": thread_id,
+            "recursion_limit": 10,
         }
     }
 

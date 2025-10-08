@@ -111,11 +111,14 @@ Navigate to the [`ace-controller-voice-interface`](../ace-controller-voice-inter
 ### 6. Deploy RIVA NIMS
 Set the GPU IDs for the RIVA NIMs.
 ```sh
-# if on A100s
+# if on A100s, the RIVA NIMs could share one A100 or be deployed seperately
 export RIVA_ASR_NIM_GPU_ID=6
-export RIVA_TTS_NIM_GPU_ID=6
+export RIVA_TTS_NIM_GPU_ID=7
 ```
-Bring up the RIVA NIMs.
+Bring up the RIVA NIMs. 
+
+Since you are self deploying the RIVA NIMs, please see the [Known Issues](./known_issues.md) documentation on the RIVA TTS NIM known issue.
+
 ```sh
 docker compose --profile riva-nims-local -f ace-controller-voice-interface/docker-compose.yml up -d
 ```
@@ -153,6 +156,21 @@ voice-agents-webrtc-python-app-1          voice-agents-webrtc-python-app        
 ...
 ```
 After the services are up, it should take less than a minute for the status to be healthy.
+
+Now you should see all the services as listed below:
+NAMES                  |            IMAGE                       |             STATUS
+--- | --- | ---
+voice-agents-webrtc-python-app-1       |   voice-agents-webrtc-python-app                                |    Up 6 minutes (healthy)
+voice-agents-webrtc-ui-app-1           |   voice-agents-webrtc-ui-app                                    |    Up 6 minutes
+turn-server                            |   instrumentisto/coturn                                         |    Up 10 minutes
+voice-agents-webrtc-riva-tts-magpie-1  |   nvcr.io/nim/nvidia/magpie-tts-multilingual:1.3.0               |   Up 25 minutes (healthy)
+voice-agents-webrtc-riva-asr-parakeet-1  | nvcr.io/nim/nvidia/parakeet-1-1b-ctc-en-us:1.3.0               |   Up 25 minutes (healthy)
+app-server-healthcare-assistant         |  app-server-healthcare-assistant:latest                           | Up 39 minutes
+nemoguard-content-safety-llm            |  nvcr.io/nim/nvidia/llama-3.1-nemoguard-8b-content-safety:1.10.1  | Up 50 minutes (healthy)
+nemoguard-topic-control-llm             |  nvcr.io/nim/nvidia/llama-3.1-nemoguard-8b-topic-control:1.10.1    |Up 50 minutes (healthy)
+agent-instruct-llm                      |  nvcr.io/nim/meta/llama-3.3-70b-instruct:1.8.5                 |  Up 59 minutes (healthy)
+
+If any of them is not up and running and has stopped, please investigate the docker logs of the container to see the issue.
 
 
 ### 8. Go to the Voice UI in your Web Browser

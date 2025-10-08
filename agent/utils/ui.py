@@ -21,6 +21,7 @@ def get_config_with_new_thread_id():
         "configurable": {
             # Checkpoints are accessed by thread_id
             "thread_id": thread_id,
+            "recursion_limit": 10,
         }
     }
     logger.info("New config created with thread id: " + thread_id)

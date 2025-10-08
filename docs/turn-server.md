@@ -4,7 +4,12 @@ A TURN server is needed for WebRTC connections when clients are behind NATs or f
 
 > Note: This is needed for deployment on Brev. 
 
-If on Brev, before proceeding further, make sure the instance provider type you're on enables exposing TCP/UDP Ports. This is required for the Turn server. If this section is not enabled, please change to another instance provider and start a new Brev instance.
+If on Brev, before proceeding further, make sure the instance provider type you're on enables exposing TCP/UDP Ports. This is required for the Turn server. 
+
+You could filter Brev instance types that support exposing TCP/UDP ports by selecting "Only Show Flexible Port Control Instances" under "Instance Capabilities".
+![](./images/brev-instance-selection.png)
+
+In the Access console of your Brev instance page, it should look like this:
 
 ![](./images/tcp_udp.png)
 
