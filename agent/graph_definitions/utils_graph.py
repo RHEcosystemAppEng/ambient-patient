@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (c) 2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+
 from langgraph.graph.message import AnyMessage, add_messages
 from langchain.schema import HumanMessage, AIMessage
 from langchain_core.messages.tool import ToolMessage
