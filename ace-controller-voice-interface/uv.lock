@@ -1035,40 +1035,6 @@ wheels = [
 ]
 
 [[package]]
-name = "nvidia-ace"
-version = "1.0.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "grpcio" },
-    { name = "protobuf" },
-]
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/ca/3e/c41e4515e086047374991da431142fffabdd8b7e780e7790292bd4a18a05/nvidia_ace-1.0.0-py3-none-any.whl", hash = "sha256:5812401869990b37bfb9ac68c10392b1466eccb9cee12f1f714bb468e7131304", size = 8136 },
-]
-
-[[package]]
-name = "nvidia-animation-graph"
-version = "1.1.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "nvidia-ace" },
-]
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/9f/65/9a4f05c431bcd6b01fdea51de059b702199146bc9cb8543784ca57ed3b65/nvidia_animation_graph-1.1.0-py3-none-any.whl", hash = "sha256:e0749b5b2925ae23697404bfff05e3f55f1b80169470f2d60874df2fd75c316a", size = 7218 },
-]
-
-[[package]]
-name = "nvidia-audio2face-3d"
-version = "1.3.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "nvidia-ace" },
-]
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/bc/80/05bf80c35efea5f90614ab67c07f1e7c1f28b4fb138d85493e4bfa416d83/nvidia_audio2face_3d-1.3.0-py3-none-any.whl", hash = "sha256:ebf3afc0e50adc8d1ae958fe77c63d3d0bce9428fb9757fe863edbbb6d504fc7", size = 13744 },
-]
-
-[[package]]
 name = "nvidia-pipecat"
 version = "0.2.0"
 source = { editable = "../../" }
@@ -1077,8 +1043,6 @@ dependencies = [
     { name = "fastapi" },
     { name = "hatchling" },
     { name = "langchain-nvidia-ai-endpoints" },
-    { name = "nvidia-animation-graph" },
-    { name = "nvidia-audio2face-3d" },
     { name = "nvidia-riva-client" },
     { name = "onnxruntime" },
     { name = "openai" },
