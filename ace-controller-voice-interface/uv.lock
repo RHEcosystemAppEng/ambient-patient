@@ -807,16 +807,16 @@ wheels = [
 
 [[package]]
 name = "langchain-nvidia-ai-endpoints"
-version = "0.3.13"
+version = "0.3.18"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
     { name = "filetype" },
     { name = "langchain-core" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d0/57/15494bcf56da7d3a910ef42092cf58bba086dc8344599200a1334b6482b7/langchain_nvidia_ai_endpoints-0.3.13.tar.gz", hash = "sha256:55132cb16e0eaff776017683def550283020ba24a8569a2928557a600a8cde4c", size = 38649 }
+sdist = { url = "https://files.pythonhosted.org/packages/e9/8c/9a85fb802a8d683cc49d7bfa249deea3fd316047f7f9fe53de524427cefd/langchain_nvidia_ai_endpoints-0.3.18.tar.gz", hash = "sha256:798d219a3d5a9cffb87a1907d9d0fb707ec93da8f44adb74198dd4af445a532f", size = 41169, upload-time = "2025-09-10T00:00:59.842Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/67/07/8da844674b999518449ed3655e3085873c3d2a56964889eb4926a5cc563f/langchain_nvidia_ai_endpoints-0.3.13-py3-none-any.whl", hash = "sha256:c4723dc1b1c23153c7d33f3ff3203d62382b47ae4e44008890f60fd1065da9e7", size = 42438 },
+    { url = "https://files.pythonhosted.org/packages/e0/59/55fcbcb9ef470fed95003c2ae6605a23337b52a96141a1a0b50ffc878a2d/langchain_nvidia_ai_endpoints-0.3.18-py3-none-any.whl", hash = "sha256:899b5f32d880543bd20e8d011cadcb98c804d9480938c4a8e3397c3215304c76", size = 44423, upload-time = "2025-09-10T00:00:58.442Z" },
 ]
 
 [[package]]
