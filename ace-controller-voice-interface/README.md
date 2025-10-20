@@ -106,4 +106,13 @@ You could change the ASR / TTS models to different ones if you'd like. Browse [b
 ### Adding Custom TTS IPA Dictionary
 In [ipa.json](./ipa.json), you could add to the dictionary your custom word-pronounciation pairs in the International Phonetic Alphabet (IPA) standard.
 
+### Speculative Speech
+Speculative speech processing is a feature in the voice agent that reduces bot response latency by working directly on Riva ASR early interim user transcripts instead of waiting for final transcripts. This is only a feature of Riva ASR. In our application, we disable this feature by default because our healthcare agent backend in LangGraph retains memory of every interaction / request between the user and the agent. With speculative speech, there are two similar requests sent to the agent backend and two responses, one for the interim ASR transcript and one for the final ASR transcript, and getting a response for each request. With both of the interactions logged in the agent memory, there can be great confusion caused. If connected to a backend without memory saved for each request/response, speculative speech can reduce latency without causing any issues.
 
+If you are customizing for an agentic system that is okay with getting one request for interim ASR transcript and one request for the final ASR request, such as a simple LLM backend, you could add `ENABLE_SPECULATIVE_SPEECH` environment variable and set as `true` in the `ace_controller.env` file to enable speculative speech processing.
+
+See the [documentation](https://docs.nvidia.com/ace/ace-controller-microservice/1.0/user-guide.html#speculative-speech-processing) on Speculative Speech Processing for more details.
+
+### Saving to Audio Files
+
+By default, our application does not save any audio files from the user-agent interaction. If you would like to enable audio file saving, you could add the environment variable `DUMP_AUDIO_FILES` and set to `true` in the `ace_controller.env` file.

@@ -159,9 +159,10 @@ async def run_bot(webrtc_connection, ws: WebSocket):
         ),
         ipa_dict=ipa_dict,
     )
-
-    enable_speculative_speech = os.getenv("DUMP_AUDIO_FILES", "false").lower() == "true"
-    if enable_speculative_speech:
+    # by default, audio recording is disabled, 
+    # if you want to record audio, set the environment variable DUMP_AUDIO_FILES to true in ace_controller.env file
+    enable_audio_recording = os.getenv("DUMP_AUDIO_FILES", "false").lower() == "true"
+    if enable_audio_recording:
         # Create audio_dumps directory if it doesn't exist
         audio_dumps_dir = Path(__file__).parent / "audio_dumps"
         audio_dumps_dir.mkdir(exist_ok=True)
