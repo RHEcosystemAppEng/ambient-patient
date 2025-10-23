@@ -2,7 +2,7 @@
 
 ![](./images/architecture_diagram.png)
 
-An agentic healthcare front desk can assist patients and the healthcare professionals in various scanarios: it can assist with the new patient intake process, going over each of the fields in a enw patient form with the patients; it can assist with the appointment scheduling process, looking up available appointments and booking them for patients after conversing with the patient to find out their needs; it can help look up the patient's medications and general information on the medications, and more.
+An agentic healthcare front desk can assist patients and the healthcare professionals in various scanarios: it can assist with the new patient intake process, going over each of the fields in a new patient form with the patients; it can assist with the appointment scheduling process, looking up available appointments and booking them for patients after conversing with the patient to find out their needs; it can help look up the patient's medications and general information on the medications, and more.
 
 The front desk assistant contains agentic LLM NIM with tools calling capabilities implemented in the LangGraph framework.
 
@@ -76,64 +76,18 @@ Now we will be going over how to bring up the agents with a text chatbot in Grad
 
 ### 1. Edit the [vars.env](./vars.env) file to set environment variables
 It is required to configure each one of these environment variables before proceeding to run the applications.
-
-- `NVIDIA_API_KEY`
-
-    Required. Please enter your own. This is to access the hosted models on the public NVIDIA AI Endpoints.
-
-
-- `NGC_API_KEY`
-
-    Required. Please enter your own. This is to pull the relevant NIMs, docker images, and resources from NGC.
-
-- `TAVILY_API_KEY`
-
-    Optional. The Tavily key is only required if you want to run the full graph or the medication lookup graph. Get your API Key from the [Tavily website](https://app.tavily.com/). This is used in the tool named `medication_instruction_search_tool` in [`graph.py`](./graph_definitions/graph.py) or [`graph_medication_lookup_only.py`](./graph_definitions/graph_medication_lookup_only.py). 
-    
-    If you are not running these two applications, leave the Tavily key empty.
-
-
-- `AGENT_LLM_BASE_URL`
-
-    Required. `AGENT_LLM_BASE_URL` is set to the default value of `"https://integrate.api.nvidia.com/v1"`, which points to the public NVIDIA AI Endpoints. If intending to self host the NIM by spinning up the `agent-instruct-llm` service in docker compose, set to `http://agent-instruct-llm:8050/v1`. This environment variable is used in the `ChatNVIDIA` API for defining the LLM to be used.
-
-- `AGENT_LLM_MODEL`
-
-    Required. This is set to the default value of `"meta/llama-3.3-70b-instruct"`. This environment variable is used in the `ChatNVIDIA` API for defining the LLM to be used. You can get a list of models that are known to support tool calling with,
-    ```
-    tool_models = [
-        model for model in ChatNVIDIA.get_available_models() if model.supports_tools
-    ]
-    ```
-    
-- `LOG_LEVEL`
-
-    Required. `LOG_LEVEL` indicates the level of logging intended. If set to `WARNING`, we will only see the most essential human and agent message logs. If set to `INFO` or `DEBUG`, we will see details logs of human and agent messages, as well as details logs of NeMo Guardrails. 
-
-- `NEMO_GUARDRAILS_CONFIG_PATH`
-
-    Optional. If `NEMO_GUARDRAILS_CONFIG_PATH` is not set or left empty, that implies the agent(s) will not be utilizing NeMo Guardrails. If you would like to utilize NeMo Guardrails for safeguarding your application, you can point to the path where your config files are. We provide a few examples for the patient intake scenario under the directory [nmgr-config-store](./nmgr-config-store/). `nmgr-config-store/patient-intake-basic-input`, `nmgr-config-store/patient-intake-input-output` and `nmgr-config-store/patient-intake-nemoguard` utilize public NVIDIA AI Endpoint for the LLMs used for guardrails; `nmgr-config-store/patient-intake-nemoguard-self-hosted-nim` assumes local self hosted NemoGuard NIMs.
-
-    If you're exploring the other agents such as the appointment making agent or medication lookup agent, please create your own configuration for these agents, as the examples are only meant for the patient intake scenario.
-
- 
-- LangSmith configuration: `LANGSMITH_TRACING`, `LANGSMITH_ENDPOINT`, and `LANGSMITH_API_KEY`, `LANGSMITH_PROJECT`
-
-    Optional. These four environment variables are entirely optional. They enable us to view the LangGraph application tracing in [Langsmith](https://smith.langchain.com/). If you would like to utilize LangSmith, please configure them for your own account. 
-    
-    Otherwise, feel free to remove them or leave them empty. 
-
-- `TIMEZONE` 
-
-    Required. This is utilized in the patient intake agent or full agent, for saving the patient info to a json file with a timestamp in the filename. Change the default value of "America/Los_Angeles" if you would like the timestamp to be in another timezone.
-
-    Suggest to keep the default value unless there's a need to modify.
-
-- `APP_OUTPUT_DIR`
-
-    Required. This is utilized in the patient intake agent or full agent, for specifying the directory where the patient info will be saved to a json file. This directory will be created when the tool is called. If you change from the default value of "app_output_files", please also change in the [docker-compose.yaml](./docker-compose.yaml) volume mounting options for each service.
-
-    Suggest to keep the default value unless there's a need to modify.
+| Environment Variable | Description | Required/Optional |
+|---|---|---|
+| `NVIDIA_API_KEY` | Please enter your own. This is to access the hosted models on the public NVIDIA AI Endpoints. See [NVIDIA API Keys](../docs/api_keys.md#nvidia-api-key) for generating one.| Required |
+| `NGC_API_KEY` | Please enter your own. This is to pull the relevant NIMs, docker images, and resources from NGC. See [NGC doc](https://docs.nvidia.com/ngc/latest/ngc-private-registry-user-guide.html#ngc-api-keys) on generating one. | Required |
+| `TAVILY_API_KEY` | The Tavily key is only required if you want to run the full graph or the medication lookup graph. Get your API Key from the [Tavily website](https://app.tavily.com/). This is used in the tool named `medication_instruction_search_tool` in [`graph.py`](./graph_definitions/graph.py) or [`graph_medication_lookup_only.py`](./graph_definitions/graph_medication_lookup_only.py). </br> If you are not running these two applications, leave the Tavily key empty. | Optional |
+|`AGENT_LLM_BASE_URL` | `AGENT_LLM_BASE_URL` is set to the default value of `"https://integrate.api.nvidia.com/v1"`, which points to the public NVIDIA AI Endpoints. If intending to self host the NIM by spinning up the `agent-instruct-llm` service in docker compose, set to `http://agent-instruct-llm:8050/v1`. This environment variable is used in the `ChatNVIDIA` API for defining the LLM to be used. | Required|
+| `AGENT_LLM_MODEL`| This is set to the default value of `"meta/llama-3.3-70b-instruct"`. This environment variable is used in the `ChatNVIDIA` API for defining the LLM to be used. You can get a list of models that are known to support tool calling with, `tool_models = [model for model in ChatNVIDIA.get_available_models() if model.supports_tools]` | Required|
+|`LOG_LEVEL` | `LOG_LEVEL` indicates the level of logging intended. If set to `WARNING`, we will only see the most essential human and agent message logs. If set to `INFO` or `DEBUG`, we will see details logs of human and agent messages, as well as details logs of NeMo Guardrails. | Required |
+|`NEMO_GUARDRAILS_CONFIG_PATH` | If `NEMO_GUARDRAILS_CONFIG_PATH` is not set or left empty, that implies the agent(s) will not be utilizing NeMo Guardrails. If you would like to utilize NeMo Guardrails for safeguarding your application, you can point to the path where your config files are. We provide a few examples for the patient intake scenario under the directory [nmgr-config-store](./nmgr-config-store/). `nmgr-config-store/patient-intake-basic-input`, `nmgr-config-store/patient-intake-input-output` and `nmgr-config-store/patient-intake-nemoguard` utilize public NVIDIA AI Endpoint for the LLMs used for guardrails; `nmgr-config-store/patient-intake-nemoguard-self-hosted-nim` assumes local self hosted NemoGuard NIMs. </br> If you're exploring the other agents such as the appointment making agent or medication lookup agent, please create your own configuration for these agents, as the examples are only meant for the patient intake scenario.| Optional|
+| LangSmith configuration: `LANGSMITH_TRACING`, `LANGSMITH_ENDPOINT`, `LANGSMITH_API_KEY`, and `LANGSMITH_PROJECT`| These four environment variables are entirely optional. They enable us to view the LangGraph application tracing in [Langsmith](https://smith.langchain.com/). If you would like to utilize LangSmith, please configure them for your own account. </br> Otherwise, feel free to remove them or leave them empty. | Optional
+|`TIMEZONE` | This is utilized in the patient intake agent or full agent, for saving the patient info to a json file with a timestamp in the filename. Change the default value of "America/Los_Angeles" if you would like the timestamp to be in another timezone. | Required. </br> Suggest to keep the default value unless there's a need to modify. |
+|`APP_OUTPUT_DIR` | This is utilized in the patient intake agent or full agent, for specifying the directory where the patient info will be saved to a json file. This directory will be created when the tool is called. If you change from the default value of "app_output_files", please also change in the [docker-compose.yaml](./docker-compose.yaml) volume mounting options for each service.| Required. </br> Suggest to keep the default value unless there's a need to modify.|
 
 
 ### 2. Running the simple text Gradio UI

@@ -33,14 +33,13 @@ For the hardware required when choosing to self deploy the RIVA ASR and TTS NIMs
 
 
 Open the [ace_controller.env](./ace_controller.env) file, and configure the following environment variables:
-  - `NGC_API_KEY` - Required for downloading RIVA ASR and TTS NIMs (containers on NGC) for self hosting.
-  - `NVIDIA_API_KEY` - Required to access the NVIDIA API catalog public endpoints [build.nvidia.com](https://build.nvidia.com/) if utilizing public endpoints for the RIVA ASR AND TTS NIMs.
-  - `CONFIG_PATH` - required configuration file for the speech pipeline.
-    - Option 1: when utilizing the public NVIDIA AI Endpoints for the RIVA ASR and TTS NIMs, specify `CONFIG_PATH=./configs/config_riva_public_endpoints.yaml` 
-    - Option 2: when self hosting the RIVA ASR NIM, specify `CONFIG_PATH=./configs/config_riva_self_hosting.yaml`
-  
-    See [Bot Pipeline Customizations](#pipeline-customizations) for more info.
-  - `REQUEST_TIMEOUT` - this specifies the timeout threshold in seconds waiting for a response from the request to the agent backend
+
+| Environment Variable | Description | Required/Optional |
+|---|---|---|
+| `NGC_API_KEY` | Required for downloading RIVA ASR and TTS NIMs (containers on NGC) for self hosting. See [NGC doc](https://docs.nvidia.com/ngc/latest/ngc-private-registry-user-guide.html#ngc-api-keys) on generating one. | Required |
+| `NVIDIA_API_KEY` | Required to access the NVIDIA API catalog public endpoints [build.nvidia.com](https://build.nvidia.com/) if utilizing public endpoints for the RIVA ASR AND TTS NIMs. See [NVIDIA API Keys](../docs/api_keys.md#nvidia-api-key) for generating one.| Required |
+| `CONFIG_PATH`| Required configuration file for the speech pipeline. </br> Option 1: when utilizing the public NVIDIA AI Endpoints for the RIVA ASR and TTS NIMs, specify `CONFIG_PATH=./configs/config_riva_public_endpoints.yaml` </br>  Option 2: when self hosting the RIVA ASR NIM, specify `CONFIG_PATH=./configs/config_riva_self_hosting.yaml` </br> See [Bot Pipeline Customizations](#pipeline-customizations) for more info. | Required |
+|`REQUEST_TIMEOUT` | Specifies the timeout threshold in seconds waiting for a response from the request to the agent backend | Required. </br> Suggest to leave as default. |
    
 ## Deploy Services
 

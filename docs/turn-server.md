@@ -57,8 +57,9 @@ If on Brev, expose the ports using the `TCP/UDP Ports` section in your web conso
 In the end your section should look like this:
 ![](./images/all_ports_exposed.png)
 
-#### Step 4: (re)start the ace-controller app
-(re)start the ace-controller profile:
+#### Step 4: restart the ace-controller app if needed
+Restart the ace-controller profile if you have already spun it up. Otherwise, please return to the deployment documentation that linked you to this turn-server documentation now and skip the rest of this turn-server documentation. 
+
 ```sh
 # if you have already spun up the ace-controller profile in ace-controller-voice-interface/docker-compose.yml, 
 # first bring it down:

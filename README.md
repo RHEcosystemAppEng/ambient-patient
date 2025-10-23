@@ -11,6 +11,7 @@ An agentic healthcare front desk can assist patients and healthcare professional
 - [Getting Started](#getting-started)
     - [Prerequisites](#prerequisites)
     - [Deployment Options](#deployment-options)
+- [Next Steps](#next-steps)
 - [Customization](#customization)
 - [License](#license)
 - [Security Considerations](#security-considerations)
@@ -64,7 +65,7 @@ Use | Service(s)| Recommended GPU*
 --- | --- | --- 
 [RIVA ASR NIM](https://build.nvidia.com/nvidia/parakeet-ctc-1_1b-asr/modelcard) | `nvidia/parakeet-ctc-1_1b-asr` |  1 x various options including L40, A100, and more (see [modelcard](https://build.nvidia.com/nvidia/parakeet-ctc-1_1b-asr/modelcard))
 [RIVA TTS NIM](https://build.nvidia.com/nvidia/magpie-tts-multilingual/modelcard) | `nvidia/magpie-tts-multilingual` | 1 x various options including L40, A100, and more (see [modelcard](https://build.nvidia.com/nvidia/parakeet-ctc-1_1b-asr/modelcard))
-Instruct Model for Agentic Orchestration | `llama-3.3-70b-instruct` | 2 x H100 80GB <br /> or <br />4 x A100 80GB
+[Instruct Model](https://build.nvidia.com/meta/llama-3_3-70b-instruct) for Agentic Orchestration | `llama-3.3-70b-instruct` | 2 x H100 80GB <br /> or <br />4 x A100 80GB
 [NemoGuard Content Safety Model](https://build.nvidia.com/nvidia/llama-3_1-nemoguard-8b-content-safety/modelcard) (Optional for Enabling NeMo Guardrails) | `nvidia/llama-3_1-nemoguard-8b-content-safety` | 1x options including A100, H100, L40S, A6000
 [NemoGuard Topic Control Model](https://build.nvidia.com/nvidia/llama-3_1-nemoguard-8b-topic-control/modelcard) (Optional for Enabling NeMo Guardrails) | `nvidia/llama-3_1-nemoguard-8b-topic-control` | 1x options including A100, H100, L40S, A6000
 **Total** | Entire Ambient Healthcare Agent for Patients  | 8 x A100 80GB <br /> or other combinations of the above
@@ -86,9 +87,25 @@ Instruct Model for Agentic Orchestration | `llama-3.3-70b-instruct` | 2 x H100 8
 - Linux operating systems (Ubuntu 22.04 or later recommended)
 - [Docker](https://docs.docker.com/engine/install/)
 - [Docker Compose](https://docs.docker.com/compose/install/)
+
 ### Deployment Options
-- [Deploy via Docker Compose using public NVIDIA AI Endpoints for NIMs](./docs/docker-compose-deploy-using-public-endpoints.md)
-- [Deploy via Docker Compose using self hosted NIMs](./docs/docker-compose-deploy-using-self-hosted-nims.md)
+There are two options available for this Ambient Patient Developer Example, a full voice assistant interface, which we recommend to get started with, and a chatbot assistant interface, for development and testing.
+#### Option A: Full Voice Assistant (Recommended)
+This option deploys the complete voice-enabled patient intake application, powered by NVIDIA ace controller voice agent.
+- [Deploy via Docker Compose using public NVIDIA AI Endpoints for NIMs](https://github.com/NVIDIA-AI-Blueprints/ambient-patient/blob/main/docs/docker-compose-deploy-using-public-endpoints.md). Follow this documentation for some initial quick exploration of the developer example. 
+- [Deploy via Docker Compose using self hosted NIMs](https://github.com/NVIDIA-AI-Blueprints/ambient-patient/blob/main/docs/docker-compose-deploy-using-self-hosted-nims.md). Follow this documentation for production deployment.
+
+#### Option B: Chatbot Assistant (For Development & Testing)
+
+This option is designed for experimenting with the agent's implementation and customization using a simple text-based Gradio Chatbot, without needing to set up the full voice pipeline. For setting up the chatbot, please refer to section [2. Running the simple text Gradio UI]((https://github.com/NVIDIA-AI-Blueprints/ambient-patient/tree/main/agent#2-running-the-simple-text-gradio-ui)) in the agent/README.
+
+
+## Next Steps
+After experiencing the full voice assistant, and the chatbot assistant, the next steps are:
+- See your LangGraph agent traces for observability in LangSmith under the “healthcare-agent-project” project, if you have set up your LangSmith API keys in [agent/vars.env](./agent/vars.env).
+- View the content in the [agent/README](./agent/) as well as the [ace-controller-voice-interface/README](./ace-controller-voice-interface/).
+- Customize your NeMo Guardrails configuration, your agent tools for connecting to your own APIs, and more. See the links in the next section [Customization](#customization).
+- Create your own voice agent applications for your use cases.
 
 ## Customization
 
