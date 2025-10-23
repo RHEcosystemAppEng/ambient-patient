@@ -15,7 +15,8 @@
     - [Example 2 patient-intake-input-output](#2-patient-intake-input-output)
     - [Example 3 patient-intake-nemoguard](#3-patient-intake-nemoguard)
     - [Example 4 patient-intake-nemoguard-self-hosted-nim](#4-patient-intake-nemoguard-self-hosted-nim)
-    - [Customize the configuration for your use case](#5-customize-the-configuration-for-your-use-case)
+    - [Example 5 patient-intake-nemoguard-response-customization](#5-patient-intake-nemoguard-response-customization)
+    - [Customize the configuration for your use case](#6-customize-the-configuration-for-your-use-case)
 
 ## Agent LLM
 
@@ -89,9 +90,13 @@ So far, we have been utilizing generic LLMs in the guardrails. Next, we can look
 This example utilizes the public NVIDIA AI Endpoints for inference for the LLMs enabling NeMo Guardrails.
 
 ### 4. `patient-intake-nemoguard-self-hosted-nim`
-This example has the same content as the `patient-intake-nemoguard` example, but instead of utilizing the public NVIDIA AI Endpoints, it assumes self hosting of the NemoGuard NIMs enabling NeMo Guardrails.
+This example has the same content as the `patient-intake-nemoguard` example, but instead of utilizing the public NVIDIA AI Endpoints, it assumes self hosting of the NemoGuard NIMs enabling NeMo Guardrails. The only difference between this config example and `patient-intake-nemoguard` is in the `models:` section in `config.yml`.
 
-### 5. Customize the configuration for your use case
+### 5. `patient-intake-nemoguard-response-customization` 
+The `config.co` file defines logic to handle the different unsafe categories returned by the [output parser](https://github.com/NVIDIA-NeMo/Guardrails/blob/develop/nemoguardrails/llm/output_parsers.py) that parses the raw model outputs. We are able to have different customized response messages for different unsafe categories, such as "I'm afraid I won't be able to answer that for privacy reasons.", "I'm afraid I won't be able to give medical advice or diagnosis.". The helper function in `actions.py` is utilized in `config.co`, and you can define your own Python helper functions when needed, by defining them within the config directory without needing to change anything in the NeMo Guardrails SDK.
+
+
+### 6. Customize the configuration for your use case
 
 If you're exploring the other agents such as the appointment making agent or medication lookup agent, please create your own configuration for these agents as the examples are meant for the patient intake scenario.
 
