@@ -13,7 +13,7 @@ An agentic healthcare front desk can assist patients and healthcare professional
     - [Deployment Options](#deployment-options)
 - [Next Steps](#next-steps)
 - [Customization](#customization)
-- [License](#license)
+- [License and Governing Terms](#license-and-governing-terms)
 - [Security Considerations](#security-considerations)
 
 ## Key Features
@@ -65,7 +65,7 @@ Use | Service(s)| Recommended GPU*
 --- | --- | --- 
 [RIVA ASR NIM](https://build.nvidia.com/nvidia/parakeet-ctc-1_1b-asr/modelcard) | `nvidia/parakeet-ctc-1_1b-asr` |  1 x various options including L40, A100, and more (see [modelcard](https://build.nvidia.com/nvidia/parakeet-ctc-1_1b-asr/modelcard))
 [RIVA TTS NIM](https://build.nvidia.com/nvidia/magpie-tts-multilingual/modelcard) | `nvidia/magpie-tts-multilingual` | 1 x various options including L40, A100, and more (see [modelcard](https://build.nvidia.com/nvidia/parakeet-ctc-1_1b-asr/modelcard))
-[Instruct Model](https://build.nvidia.com/meta/llama-3_3-70b-instruct) for Agentic Orchestration | `llama-3.3-70b-instruct` | 2 x H100 80GB <br /> or <br />4 x A100 80GB
+[Instruct Model](https://build.nvidia.com/meta/llama-3_3-70b-instruct) for Agentic Orchestration | `llama-3.3-70b-instruct` | 2 x H100 80GB <br> or <br>4 x A100 80GB
 [NemoGuard Content Safety Model](https://build.nvidia.com/nvidia/llama-3_1-nemoguard-8b-content-safety/modelcard) (Optional for Enabling NeMo Guardrails) | `nvidia/llama-3_1-nemoguard-8b-content-safety` | 1x options including A100, H100, L40S, A6000
 [NemoGuard Topic Control Model](https://build.nvidia.com/nvidia/llama-3_1-nemoguard-8b-topic-control/modelcard) (Optional for Enabling NeMo Guardrails) | `nvidia/llama-3_1-nemoguard-8b-topic-control` | 1x options including A100, H100, L40S, A6000
 **Total** | Entire Ambient Healthcare Agent for Patients  | 8 x A100 80GB <br /> or other combinations of the above
@@ -114,7 +114,11 @@ For customization on the RIVA ASR and TTS options, adding custom TTS IPA diction
 For customization on the LLM model, NIM hosting options, agent, system prompt, tools definition, and NeMo Guardrails configurations, please see the document [agent/customization.md](./agent/customization.md).
 
 
-## License
+## License and Governing Terms
+GOVERNING TERMS: The API trial service is governed by the [NVIDIA API Trial Terms of Service](https://assets.ngc.nvidia.com/products/api-catalog/legal/NVIDIA%20API%20Trial%20Terms%20of%20Service.pdf). The developer example software is governed by the [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0). Use of the NIM containers is governed by the [NVIDIA Software License Agreement](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-software-license-agreement) and [Product Specific Terms for NVIDIA AI Products](https://www.nvidia.com/en-us/agreements/enterprise-software/product-specific-terms-for-ai-products). Use of the ASR Parakeet CTC Riva 1.1b, Magpie TTS Multilingual, and Llama-3.3-70b-Instruct models is governed by the [NVIDIA Community Model License Agreement](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-community-models-license/). Use of the Llama-3.1-Nemoguard-8b-Topic-Control, and Llama-3.1-Nemoguard-8b-Content-Safety models is governed by the [NVIDIA Open Model License Agreement](https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-license/). Use of the Ace-Controller software is governed by the [BSD 2-Clause License](https://github.com/NVIDIA/ace-controller/blob/develop-health/LICENSE). 
+
+ADDITIONAL INFORMATION: For Llama-3.1-Nemoguard-8b-Topic-Control and Llama-3.1-Nemoguard-8b-Content-Safety, [Llama 3.1 Community License Agreement](https://www.llama.com/llama3_1/license/). For Llama-3.3-70b-Instruct, [Llama 3.3 Community License Agreement](https://www.llama.com/llama3_3/license/). Built with Llama.
+
 
 ## Security Considerations
 
