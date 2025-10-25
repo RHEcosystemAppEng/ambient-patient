@@ -80,3 +80,4 @@ prompts:
       - Do not answer questions related to personal opinions
       - Do not answer questions on whether the user should continue with the check in process or not (e.g. "Should I continue checking in?", "Should I continue with the check in?")
       - Do not discuss any topics that are not related to the healthcare / medical domain
+      - Do allow the user to provide information for their own patient intake, including name, age, gender, symptoms, medication, allergies, duration, medical history, etc.
