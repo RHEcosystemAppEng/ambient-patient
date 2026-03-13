@@ -2,3 +2,8 @@
 *__pycache__/
 ace-controller-voice-interface/audio_dumps/
 agent/app_output_files/
+.idea/.gitignore
+.idea/ambient-patient.iml
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
