@@ -1,0 +1,6 @@
+apiVersion: v2
+name: ambient-patient
+description: Ambient Patient - Healthcare assistant app-server
+type: application
+version: 1.0.0
+appVersion: "1.0.0"

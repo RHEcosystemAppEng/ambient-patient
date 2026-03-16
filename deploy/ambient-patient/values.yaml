@@ -1,0 +1,47 @@
+# Ambient Patient Helm Chart - app-server only
+
+namespace: ambient-patient
+
+images:
+  registry: image-registry.openshift-image-registry.svc:5000
+  namespace: ambient-patient
+  pullPolicy: IfNotPresent
+  appServer:
+    repository: app-server
+    tag: latest
+
+# Env names match agent/vars.env
+appServer:
+  replicaCount: 1
+  port: 8081
+  # API keys (sensitive - use --set or override)
+  nvidiaApiKey: ""
+  ngcApiKey: ""
+  tavilyApiKey: ""
+  langsmithApiKey: ""
+  # Agent LLM
+  agentLlmBaseUrl: "https://integrate.api.nvidia.com/v1"
+  agentLlmModel: "meta/llama-3.3-70b-instruct"
+  logLevel: "INFO"
+  nemoGuardrailsConfigPath: "nmgr-config-store/patient-intake-nemoguard"
+  # Langsmith
+  langsmithTracing: "true"
+  langsmithEndpoint: "https://api.smith.langchain.com"
+  langsmithProject: "healthcare-agent-project"
+  # App
+  timezone: "America/Los_Angeles"
+  appOutputDir: "app_output_files"
+
+resources:
+  appServer:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+
+service:
+  type: ClusterIP
+  appServer:
+    port: 8081
