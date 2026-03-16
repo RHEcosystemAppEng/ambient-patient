@@ -38,3 +38,10 @@ App-server image
 {{- define "ambient-patient.appServerImage" -}}
 {{- printf "%s/%s/%s:%s" .Values.images.registry .Values.images.namespace .Values.images.appServer.repository .Values.images.appServer.tag }}
 {{- end }}
+
+{{/*
+Full-agent-ui uses same image as app-server (different command only)
+*/}}
+{{- define "ambient-patient.fullAgentUiImage" -}}
+{{- include "ambient-patient.appServerImage" . }}
+{{- end }}

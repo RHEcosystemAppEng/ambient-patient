@@ -1,4 +1,4 @@
-# Ambient Patient Helm Chart - app-server only
+# Ambient Patient Helm Chart - app-server + full-agent-ui
 
 namespace: ambient-patient
 
@@ -6,6 +6,7 @@ images:
   registry: image-registry.openshift-image-registry.svc:5000
   namespace: ambient-patient
   pullPolicy: IfNotPresent
+  # Single image for both app-server and full-agent-ui (same Dockerfile, different command)
   appServer:
     repository: app-server
     tag: latest
@@ -32,8 +33,20 @@ appServer:
   timezone: "America/Los_Angeles"
   appOutputDir: "app_output_files"
 
+# full-agent-ui uses same env as app-server (vars.env)
+fullAgentUi:
+  replicaCount: 1
+  port: 7861
+
 resources:
   appServer:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "2Gi"
+      cpu: "1000m"
+  fullAgentUi:
     requests:
       memory: "512Mi"
       cpu: "250m"
@@ -45,3 +58,10 @@ service:
   type: ClusterIP
   appServer:
     port: 8081
+  fullAgentUi:
+    port: 7861
+
+route:
+  fullAgentUi:
+    enabled: true
+    host: ""  # optional; auto-generated if empty

@@ -20,9 +20,7 @@ oc project $NAMESPACE 2>/dev/null || oc new-project $NAMESPACE
 
 # agent backend > app-server
 build_app_server() {
-    # Agent Backend
     cd "$REPO_ROOT/agent"
-
     echo "Building Agent Backend > App Server"
     if ! oc get bc app-server &>/dev/null; then
         oc new-build --name=app-server --binary --strategy=docker || { echo "ERROR: Failed to create BuildConfig for App Server"; exit 1; }

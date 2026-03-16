@@ -7,7 +7,7 @@ NAMESPACE=${NAMESPACE:-ambient-patient}
 RELEASE_NAME=${RELEASE_NAME:-ambient-patient}
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 
-echo "Deploying Ambient Patient (app-server)"
+echo "Deploying Ambient Patient (app-server + full-agent-ui)"
 echo "Namespace: $NAMESPACE"
 echo "Release: $RELEASE_NAME"
 
@@ -17,7 +17,6 @@ if ! oc whoami &> /dev/null; then
     exit 1
 fi
 
-# Check if app-server image exists
 echo "Checking if app-server image exists..."
 oc get imagestream app-server -n $NAMESPACE &>/dev/null || { echo "ERROR: app-server image not found. Run ./deploy/build-images.sh app-server first"; exit 1; }
 
@@ -36,7 +35,11 @@ echo "Installing Helm chart..."
 helm upgrade --install "$RELEASE_NAME" "$SCRIPT_DIR/ambient-patient" "${SET_ARGS[@]}"
 
 echo ""
-echo "✓ Ambient Patient (app-server) deployed successfully!"
+echo "✓ Ambient Patient (app-server + full-agent-ui) deployed successfully!"
 echo ""
 echo "Monitor deployment:"
 echo "  oc get pods -n $NAMESPACE -w"
+echo ""
+echo "Full Agent UI (open in browser):"
+echo "  https://<host>/full-assistant/"
+echo "  Get host: oc get route -n $NAMESPACE -l app.kubernetes.io/component=full-agent-ui -o jsonpath='{.items[0].spec.host}'"

@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ambient-patient.fullname" . }}-full-agent-ui
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "ambient-patient.labels" . | nindent 4 }}
+    app.kubernetes.io/component: full-agent-ui
+spec:
+  replicas: {{ .Values.fullAgentUi.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "ambient-patient.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: full-agent-ui
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "ambient-patient.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: full-agent-ui
+    spec:
+      containers:
+      - name: full-agent-ui
+        image: {{ include "ambient-patient.fullAgentUiImage" . }}
+        imagePullPolicy: {{ .Values.images.pullPolicy }}
+        command:
+          - python3
+          - graph_definitions/graph.py
+          - --port
+          - "7861"
+        ports:
+        - containerPort: {{ .Values.service.fullAgentUi.port }}
+          protocol: TCP
+        env:
+        - name: WATCHFILES_FORCE_POLLING
+          value: "true"
+        - name: NVIDIA_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "ambient-patient.fullname" . }}-app-server-env
+              key: NVIDIA_API_KEY
+        - name: NGC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "ambient-patient.fullname" . }}-app-server-env
+              key: NGC_API_KEY
+        - name: TAVILY_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "ambient-patient.fullname" . }}-app-server-env
+              key: TAVILY_API_KEY
+        - name: LANGSMITH_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "ambient-patient.fullname" . }}-app-server-env
+              key: LANGSMITH_API_KEY
+        - name: AGENT_LLM_BASE_URL
+          value: {{ .Values.appServer.agentLlmBaseUrl | quote }}
+        - name: AGENT_LLM_MODEL
+          value: {{ .Values.appServer.agentLlmModel | quote }}
+        - name: LOG_LEVEL
+          value: {{ .Values.appServer.logLevel | quote }}
+        - name: NEMO_GUARDRAILS_CONFIG_PATH
+          value: {{ .Values.appServer.nemoGuardrailsConfigPath | quote }}
+        - name: LANGSMITH_TRACING
+          value: {{ .Values.appServer.langsmithTracing | quote }}
+        - name: LANGSMITH_ENDPOINT
+          value: {{ .Values.appServer.langsmithEndpoint | quote }}
+        - name: LANGSMITH_PROJECT
+          value: {{ .Values.appServer.langsmithProject | quote }}
+        - name: TIMEZONE
+          value: {{ .Values.appServer.timezone | quote }}
+        - name: APP_OUTPUT_DIR
+          value: {{ .Values.appServer.appOutputDir | quote }}
+        volumeMounts:
+        - name: app-output
+          mountPath: /app/app_output_files
+        - name: nmgr-config-store
+          mountPath: /app/nmgr-config-store
+        resources:
+          {{- toYaml .Values.resources.fullAgentUi | nindent 10 }}
+      volumes:
+      - name: app-output
+        emptyDir: {}
+      - name: nmgr-config-store
+        emptyDir: {}
