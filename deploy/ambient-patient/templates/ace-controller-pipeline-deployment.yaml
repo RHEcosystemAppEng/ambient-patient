@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ambient-patient.fullname" . }}-ace-controller-pipeline
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "ambient-patient.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ace-controller-pipeline
+spec:
+  replicas: {{ .Values.aceControllerPipeline.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "ambient-patient.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: ace-controller-pipeline
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "ambient-patient.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: ace-controller-pipeline
+    spec:
+      containers:
+      - name: ace-controller-pipeline
+        image: {{ include "ambient-patient.aceControllerPipelineImage" . }}
+        imagePullPolicy: {{ .Values.images.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.service.aceControllerPipeline.port }}
+          protocol: TCP
+        command: ["/bin/bash", "-c"]
+        args: ["uv sync --frozen && uv run pipeline-patient.py"]
+        env:
+        - name: UV_CACHE_DIR
+          value: "/tmp/uv-cache"
+        - name: NGC_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "ambient-patient.fullname" . }}-ace-controller-env
+              key: NGC_API_KEY
+        - name: NVIDIA_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "ambient-patient.fullname" . }}-ace-controller-env
+              key: NVIDIA_API_KEY
+        - name: CONFIG_PATH
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "ambient-patient.fullname" . }}-ace-controller-env
+              key: CONFIG_PATH
+        - name: REQUEST_TIMEOUT
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "ambient-patient.fullname" . }}-ace-controller-env
+              key: REQUEST_TIMEOUT
+        volumeMounts:
+        - name: uv-cache
+          mountPath: /tmp/uv-cache
+        - name: audio-dumps
+          mountPath: /ace-controller/examples/healthcare_agent/audio_dumps
+        - name: venv
+          mountPath: /ace-controller/examples/healthcare_agent/.venv
+        livenessProbe:
+          httpGet:
+            path: /get_prompt
+            port: {{ .Values.service.aceControllerPipeline.port }}
+          initialDelaySeconds: 180
+          periodSeconds: 30
+          timeoutSeconds: 10
+        resources:
+          {{- toYaml .Values.resources.aceControllerPipeline | nindent 10 }}
+      volumes:
+      - name: uv-cache
+        emptyDir: {}
+      - name: audio-dumps
+        emptyDir: {}
+      - name: venv
+        emptyDir: {}

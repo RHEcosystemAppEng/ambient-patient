@@ -45,3 +45,10 @@ Full-agent-ui uses same image as app-server (different command only)
 {{- define "ambient-patient.fullAgentUiImage" -}}
 {{- include "ambient-patient.appServerImage" . }}
 {{- end }}
+
+{{/*
+Ace-controller pipeline (python-app) image
+*/}}
+{{- define "ambient-patient.aceControllerPipelineImage" -}}
+{{- printf "%s/%s/%s:%s" .Values.images.registry .Values.images.namespace .Values.images.aceControllerPipeline.repository .Values.images.aceControllerPipeline.tag }}
+{{- end }}

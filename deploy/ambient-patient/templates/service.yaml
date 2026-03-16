@@ -37,3 +37,23 @@ spec:
     app.kubernetes.io/name: {{ include "ambient-patient.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/component: full-agent-ui
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ambient-patient.fullname" . }}-ace-controller-pipeline
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "ambient-patient.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ace-controller-pipeline
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+  - port: {{ .Values.service.aceControllerPipeline.port }}
+    targetPort: {{ .Values.service.aceControllerPipeline.port }}
+    protocol: TCP
+    name: http
+  selector:
+    app.kubernetes.io/name: {{ include "ambient-patient.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/component: ace-controller-pipeline

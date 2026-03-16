@@ -10,6 +10,10 @@ images:
   appServer:
     repository: app-server
     tag: latest
+  # ace-controller-voice-interface: python-app
+  aceControllerPipeline:
+    repository: ace-controller-pipeline
+    tag: latest
 
 # Env names match agent/vars.env
 appServer:
@@ -38,6 +42,15 @@ fullAgentUi:
   replicaCount: 1
   port: 7861
 
+# ace-controller-voice-interface python-app (env from ace_controller.env)
+aceControllerPipeline:
+  replicaCount: 1
+  port: 7860
+  ngcApiKey: ""
+  nvidiaApiKey: ""
+  configPath: "./configs/config_riva_public_endpoints.yaml"
+  requestTimeout: "15.0"
+
 resources:
   appServer:
     requests:
@@ -53,6 +66,13 @@ resources:
     limits:
       memory: "2Gi"
       cpu: "1000m"
+  aceControllerPipeline:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
 
 service:
   type: ClusterIP
@@ -60,6 +80,8 @@ service:
     port: 8081
   fullAgentUi:
     port: 7861
+  aceControllerPipeline:
+    port: 7860
 
 route:
   fullAgentUi:
