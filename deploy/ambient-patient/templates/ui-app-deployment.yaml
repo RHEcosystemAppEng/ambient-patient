@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ambient-patient.fullname" . }}-ui-app
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "ambient-patient.labels" . | nindent 4 }}
+    app.kubernetes.io/component: ui-app
+spec:
+  replicas: {{ .Values.uiApp.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "ambient-patient.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/component: ui-app
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "ambient-patient.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/component: ui-app
+    spec:
+      containers:
+      - name: ui-app
+        image: {{ include "ambient-patient.uiAppImage" . }}
+        imagePullPolicy: {{ .Values.images.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.service.uiApp.port }}
+          protocol: TCP
+        resources:
+          {{- toYaml .Values.resources.uiApp | nindent 10 }}

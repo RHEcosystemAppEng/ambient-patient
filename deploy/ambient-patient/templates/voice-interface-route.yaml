@@ -1,0 +1,50 @@
+{{- if .Values.route.voiceInterface.enabled }}
+# Route for ui-app (frontend) - serves root path
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ include "ambient-patient.fullname" . }}-voice-interface
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "ambient-patient.labels" . | nindent 4 }}
+    app.kubernetes.io/component: voice-interface
+spec:
+  host: {{ include "ambient-patient.voiceInterfaceHost" . }}
+  to:
+    kind: Service
+    name: {{ include "ambient-patient.fullname" . }}-ui-app
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
+---
+# Route for ace-controller-pipeline (API) - serves /api path
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ include "ambient-patient.fullname" . }}-voice-interface-api
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "ambient-patient.labels" . | nindent 4 }}
+    app.kubernetes.io/component: voice-interface-api
+  annotations:
+    haproxy.router.openshift.io/rewrite-target: /
+    haproxy.router.openshift.io/timeout: 300s
+    haproxy.router.openshift.io/timeout-tunnel: 1h
+spec:
+  host: {{ include "ambient-patient.voiceInterfaceHost" . }}
+  path: /api
+  to:
+    kind: Service
+    name: {{ include "ambient-patient.fullname" . }}-ace-controller-pipeline
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
+{{- end }}

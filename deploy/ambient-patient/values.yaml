@@ -5,7 +5,7 @@ namespace: ambient-patient
 images:
   registry: image-registry.openshift-image-registry.svc:5000
   namespace: ambient-patient
-  pullPolicy: IfNotPresent
+  pullPolicy: Always  # Always pull latest images (use IfNotPresent for tagged releases)
   # Single image for both app-server and full-agent-ui (same Dockerfile, different command)
   appServer:
     repository: app-server
@@ -13,6 +13,10 @@ images:
   # ace-controller-voice-interface: python-app
   aceControllerPipeline:
     repository: ace-controller-pipeline
+    tag: latest
+  # ace-controller-voice-interface: ui-app (webrtc frontend)
+  uiApp:
+    repository: ace-controller-ui
     tag: latest
 
 # Env names match agent/vars.env
@@ -51,6 +55,11 @@ aceControllerPipeline:
   configPath: "./configs/config_riva_public_endpoints.yaml"
   requestTimeout: "15.0"
 
+# ace-controller-voice-interface ui-app (webrtc frontend)
+uiApp:
+  replicaCount: 1
+  port: 4400
+
 resources:
   appServer:
     requests:
@@ -73,6 +82,13 @@ resources:
     limits:
       memory: "1Gi"
       cpu: "500m"
+  uiApp:
+    requests:
+      memory: "128Mi"
+      cpu: "50m"
+    limits:
+      memory: "512Mi"
+      cpu: "250m"
 
 service:
   type: ClusterIP
@@ -82,8 +98,17 @@ service:
     port: 7861
   aceControllerPipeline:
     port: 7860
+  uiApp:
+    port: 4400
 
 route:
   fullAgentUi:
     enabled: true
     host: ""  # optional; auto-generated if empty
+  voiceInterface:
+    enabled: true
+    # REQUIRED for path-based routing: both UI (/) and API (/api) routes must share same hostname
+    # Get your cluster domain: oc get route -n ambient-patient -o jsonpath='{.items[0].spec.host}' | cut -d'.' -f2-
+    # Then set: voice-interface.<cluster-domain>
+    # Example: voice-interface.apps.ai-dev02.kni.syseng.devcluster.openshift.com
+    host: "voice-interface.apps.ai-dev02.kni.syseng.devcluster.openshift.com"

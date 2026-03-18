@@ -52,3 +52,19 @@ Ace-controller pipeline (python-app) image
 {{- define "ambient-patient.aceControllerPipelineImage" -}}
 {{- printf "%s/%s/%s:%s" .Values.images.registry .Values.images.namespace .Values.images.aceControllerPipeline.repository .Values.images.aceControllerPipeline.tag }}
 {{- end }}
+
+{{/*
+UI-app (webrtc-ui) image
+*/}}
+{{- define "ambient-patient.uiAppImage" -}}
+{{- printf "%s/%s/%s:%s" .Values.images.registry .Values.images.namespace .Values.images.uiApp.repository .Values.images.uiApp.tag }}
+{{- end }}
+
+{{/*
+Voice interface hostname - ensures both routes share the same host
+For path-based routing to work, both routes must share the same hostname.
+This requires an explicit host to be set in values.yaml
+*/}}
+{{- define "ambient-patient.voiceInterfaceHost" -}}
+{{- required "A valid .Values.route.voiceInterface.host is required for path-based routing!" .Values.route.voiceInterface.host }}
+{{- end }}
