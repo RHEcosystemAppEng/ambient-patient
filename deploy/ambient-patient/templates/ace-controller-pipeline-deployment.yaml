@@ -28,7 +28,7 @@ spec:
         - containerPort: {{ .Values.service.aceControllerPipeline.port }}
           protocol: TCP
         command: ["/bin/bash", "-c"]
-        args: ["uv sync --frozen && uv run pipeline-patient.py"]
+        args: ["uv sync --frozen && uv run pipeline-patient.py{{- if .Values.aceControllerPipeline.verbose }} -v{{- end }}"]
         env:
         - name: UV_CACHE_DIR
           value: "/tmp/uv-cache"
@@ -52,6 +52,36 @@ spec:
             secretKeyRef:
               name: {{ include "ambient-patient.fullname" . }}-ace-controller-env
               key: REQUEST_TIMEOUT
+        - name: TURN_SERVER_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "ambient-patient.fullname" . }}-ace-controller-env
+              key: TURN_SERVER_URL
+        - name: TURN_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "ambient-patient.fullname" . }}-ace-controller-env
+              key: TURN_USERNAME
+        - name: TURN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "ambient-patient.fullname" . }}-ace-controller-env
+              key: TURN_PASSWORD
+        - name: METERED_TURN_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "ambient-patient.fullname" . }}-ace-controller-env
+              key: METERED_TURN_API_KEY
+        - name: METERED_CREDENTIALS_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "ambient-patient.fullname" . }}-ace-controller-env
+              key: METERED_CREDENTIALS_URL
+        - name: RAG_SERVER_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "ambient-patient.fullname" . }}-ace-controller-env
+              key: RAG_SERVER_URL
         volumeMounts:
         - name: uv-cache
           mountPath: /tmp/uv-cache

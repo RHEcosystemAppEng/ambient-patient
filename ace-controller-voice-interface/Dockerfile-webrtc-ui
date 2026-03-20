@@ -23,8 +23,29 @@ RUN npm ci --frozen-lockfile \
 # Copy source code and build
 RUN cp -r /ace-controller/examples/webrtc_ui/* .
 COPY config.ts ./src/config.ts
+COPY waitForICEGatheringComplete.ts ./src/utils/waitForICEGatheringComplete.ts
+COPY hooks/use-pipecat-webrtc.ts ./src/hooks/use-pipecat-webrtc.ts
+COPY public ./public
+COPY patch-webrtc-vite.cjs ./patch-webrtc-vite.cjs
+COPY patch-index-favicon.cjs ./patch-index-favicon.cjs
+RUN node patch-webrtc-vite.cjs
+RUN node patch-index-favicon.cjs
+
+# Vite inlines import.meta.env.VITE_* at build time — set when building the UI image (see deploy/build-images.sh)
+# Default: load ICE from GET /api/ice_config on the pipeline. Pass --build-arg VITE_ICE_FROM_PIPELINE=false to opt out.
+ARG VITE_ICE_FROM_PIPELINE=true
+ARG VITE_TURN_URLS
+ARG VITE_TURN_USERNAME
+ARG VITE_TURN_PASSWORD
+ENV VITE_ICE_FROM_PIPELINE=${VITE_ICE_FROM_PIPELINE}
+ENV VITE_TURN_URLS=${VITE_TURN_URLS}
+ENV VITE_TURN_USERNAME=${VITE_TURN_USERNAME}
+ENV VITE_TURN_PASSWORD=${VITE_TURN_PASSWORD}
+
 RUN npm run build \
     && rm -rf node_modules
+# Browsers often request /favicon.ico; duplicate SVG so the path returns 200 (mime may be generic).
+RUN if [ -f dist/favicon.svg ]; then cp dist/favicon.svg dist/favicon.ico; fi
 
 # Production stage
 FROM python:3.12-alpine AS production

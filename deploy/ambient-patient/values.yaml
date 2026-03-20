@@ -53,7 +53,20 @@ aceControllerPipeline:
   ngcApiKey: ""
   nvidiaApiKey: ""
   configPath: "./configs/config_riva_public_endpoints.yaml"
+  # If empty, Helm sets RAG_SERVER_URL to the in-cluster app-server Service (same namespace).
+  # Set explicitly for cross-namespace RAG or non-Helm installs (e.g. http://app-server-healthcare-assistant:8081).
+  ragServerUrl: ""
   requestTimeout: "15.0"
+  # Passes -v to pipeline-patient.py → loguru TRACE (very chatty). false → DEBUG (default for pipeline stderr).
+  verbose: false
+  # WebRTC TURN (required when browser and pod are not on the same routable UDP path).
+  # Must match the UI image build (VITE_TURN_* in Dockerfile-webrtc-ui / build-images.sh).
+  turnServerUrl: ""
+  turnUsername: ""
+  turnPassword: ""
+  # Optional: Metered REST credentials (UI can GET /ice_config; key stays server-side). Override URL if your app uses another host.
+  meteredTurnApiKey: ""
+  meteredCredentialsUrl: "https://fax.metered.live/api/v1/turn/credentials"
 
 # ace-controller-voice-interface ui-app (webrtc frontend)
 uiApp:

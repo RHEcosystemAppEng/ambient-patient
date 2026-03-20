@@ -42,6 +42,12 @@ build_ace_controller_pipeline() {
 }
 
 # ace_controller > ui-app (ui-app in docker-compose)
+# Default Dockerfile build loads ICE from pipeline (Metered via METERED_TURN_API_KEY). To opt out:
+#   export VITE_ICE_FROM_PIPELINE=false
+# Optional static TURN instead (comma-separated; must match pipeline TURN_*):
+#   export VITE_TURN_URLS='stun:stun.relay.metered.ca:80,turn:global.relay.metered.ca:80,...'
+#   export VITE_TURN_USERNAME=...
+#   export VITE_TURN_PASSWORD=...
 build_ace_controller_ui() {
     cd "$REPO_ROOT/ace-controller-voice-interface"
 
@@ -50,7 +56,16 @@ build_ace_controller_ui() {
         oc new-build --name=ace-controller-ui --binary --strategy=docker || { echo "ERROR: Failed to create BuildConfig for Ace Controller UI"; exit 1; }
     fi
     oc patch bc ace-controller-ui --type=merge -p '{"spec":{"strategy":{"dockerStrategy":{"dockerfilePath":"Dockerfile-webrtc-ui"}}}}' || true
-    oc start-build ace-controller-ui --from-dir=. --follow || { echo "ERROR: Ace Controller UI build failed"; exit 1; }
+    UI_BUILD_ARGS=()
+    [ -n "${VITE_ICE_FROM_PIPELINE:-}" ] && UI_BUILD_ARGS+=(--build-arg "VITE_ICE_FROM_PIPELINE=$VITE_ICE_FROM_PIPELINE")
+    [ -n "${VITE_TURN_URLS:-}" ] && UI_BUILD_ARGS+=(--build-arg "VITE_TURN_URLS=$VITE_TURN_URLS")
+    [ -n "${VITE_TURN_USERNAME:-}" ] && UI_BUILD_ARGS+=(--build-arg "VITE_TURN_USERNAME=$VITE_TURN_USERNAME")
+    [ -n "${VITE_TURN_PASSWORD:-}" ] && UI_BUILD_ARGS+=(--build-arg "VITE_TURN_PASSWORD=$VITE_TURN_PASSWORD")
+    if [ "${#UI_BUILD_ARGS[@]}" -eq 0 ]; then
+        oc start-build ace-controller-ui --from-dir=. --follow || { echo "ERROR: Ace Controller UI build failed"; exit 1; }
+    else
+        oc start-build ace-controller-ui --from-dir=. "${UI_BUILD_ARGS[@]}" --follow || { echo "ERROR: Ace Controller UI build failed"; exit 1; }
+    fi
 }
 
 case "$BUILD_TARGET" in
