@@ -7,6 +7,3 @@ agent/app_output_files/
 .idea/misc.xml
 .idea/modules.xml
 .idea/vcs.xml
-
-# Local Helm overrides (TURN credentials); use turn-overrides.yaml.example as a template
-deploy/turn-overrides.yaml

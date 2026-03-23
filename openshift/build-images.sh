@@ -5,6 +5,22 @@ NAMESPACE=${NAMESPACE:-ambient-patient}
 REPO_ROOT=$(cd "$(dirname "$0")/.." && pwd)
 BUILD_TARGET="${1:-all}"
 
+# Merge base ace-controller-voice-interface (upstream-style tree) with openshift/override/ace-controller-voice-interface.
+# Overlay wins on path conflicts — cluster images use the overlay versions of overlapping files. Base can stay NVIDIA-default; edit the overlay for OpenShift-specific behavior.
+merge_voice_interface_context() {
+    local dest="$1"
+    mkdir -p "$dest"
+    rsync -a --delete \
+        --exclude='.venv' \
+        --exclude='.docker-build-context' \
+        --exclude='audio_dumps' \
+        --exclude='.git' \
+        "${REPO_ROOT}/ace-controller-voice-interface/" "${dest}/"
+    if [[ -d "${REPO_ROOT}/openshift/override/ace-controller-voice-interface" ]]; then
+        rsync -a "${REPO_ROOT}/openshift/override/ace-controller-voice-interface/" "${dest}/"
+    fi
+}
+
 echo "Namespace: $NAMESPACE"
 echo "Repo: $REPO_ROOT"
 echo "Target: $BUILD_TARGET"
@@ -30,15 +46,25 @@ build_app_server() {
 
 # ace_controller > pipeline (python-app in docker-compose)
 build_ace_controller_pipeline() {
-    # Ace Controller
-    cd "$REPO_ROOT/ace-controller-voice-interface"
+    local staging
+    staging=$(mktemp -d)
+    merge_voice_interface_context "$staging"
 
     echo "Building Ace Controller > Pipeline"
     if ! oc get bc ace-controller-pipeline &>/dev/null; then
-        oc new-build --name=ace-controller-pipeline --binary --strategy=docker || { echo "ERROR: Failed to create BuildConfig for Ace Controller Pipeline"; exit 1; }
+        oc new-build --name=ace-controller-pipeline --binary --strategy=docker || {
+            echo "ERROR: Failed to create BuildConfig for Ace Controller Pipeline"
+            rm -rf "$staging"
+            exit 1
+        }
     fi
     oc patch bc ace-controller-pipeline --type=merge -p '{"spec":{"strategy":{"dockerStrategy":{"dockerfilePath":"Dockerfile-python-app"}}}}' || true
-    oc start-build ace-controller-pipeline --from-dir=. --follow || { echo "ERROR: Ace Controller Pipeline build failed"; exit 1; }
+    oc start-build ace-controller-pipeline --from-dir="$staging" --follow || {
+        echo "ERROR: Ace Controller Pipeline build failed"
+        rm -rf "$staging"
+        exit 1
+    }
+    rm -rf "$staging"
 }
 
 # ace_controller > ui-app (ui-app in docker-compose)
@@ -49,11 +75,17 @@ build_ace_controller_pipeline() {
 #   export VITE_TURN_USERNAME=...
 #   export VITE_TURN_PASSWORD=...
 build_ace_controller_ui() {
-    cd "$REPO_ROOT/ace-controller-voice-interface"
+    local staging
+    staging=$(mktemp -d)
+    merge_voice_interface_context "$staging"
 
     echo "Building Ace Controller > UI App"
     if ! oc get bc ace-controller-ui &>/dev/null; then
-        oc new-build --name=ace-controller-ui --binary --strategy=docker || { echo "ERROR: Failed to create BuildConfig for Ace Controller UI"; exit 1; }
+        oc new-build --name=ace-controller-ui --binary --strategy=docker || {
+            echo "ERROR: Failed to create BuildConfig for Ace Controller UI"
+            rm -rf "$staging"
+            exit 1
+        }
     fi
     oc patch bc ace-controller-ui --type=merge -p '{"spec":{"strategy":{"dockerStrategy":{"dockerfilePath":"Dockerfile-webrtc-ui"}}}}' || true
     UI_BUILD_ARGS=()
@@ -62,10 +94,19 @@ build_ace_controller_ui() {
     [ -n "${VITE_TURN_USERNAME:-}" ] && UI_BUILD_ARGS+=(--build-arg "VITE_TURN_USERNAME=$VITE_TURN_USERNAME")
     [ -n "${VITE_TURN_PASSWORD:-}" ] && UI_BUILD_ARGS+=(--build-arg "VITE_TURN_PASSWORD=$VITE_TURN_PASSWORD")
     if [ "${#UI_BUILD_ARGS[@]}" -eq 0 ]; then
-        oc start-build ace-controller-ui --from-dir=. --follow || { echo "ERROR: Ace Controller UI build failed"; exit 1; }
+        oc start-build ace-controller-ui --from-dir="$staging" --follow || {
+            echo "ERROR: Ace Controller UI build failed"
+            rm -rf "$staging"
+            exit 1
+        }
     else
-        oc start-build ace-controller-ui --from-dir=. "${UI_BUILD_ARGS[@]}" --follow || { echo "ERROR: Ace Controller UI build failed"; exit 1; }
+        oc start-build ace-controller-ui --from-dir="$staging" "${UI_BUILD_ARGS[@]}" --follow || {
+            echo "ERROR: Ace Controller UI build failed"
+            rm -rf "$staging"
+            exit 1
+        }
     fi
+    rm -rf "$staging"
 }
 
 case "$BUILD_TARGET" in

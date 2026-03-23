@@ -3,8 +3,8 @@
 #
 # Helm values for secrets (TURN_*, API keys, Metered, etc.) come only from the environment of this process.
 # Export them in your shell, or load a file first, e.g.:
-#   set -a && source ace-controller-voice-interface/ace_controller.env && set +a && ./deploy/deploy-app.sh
-# Optional: merge deploy/turn-overrides.yaml if that file exists (advanced).
+#   set -a && source ace-controller-voice-interface/ace_controller.env && set +a && ./openshift/deploy-app.sh
+# Optional: merge openshift/turn-overrides.yaml if that file exists (advanced).
 
 set -euo pipefail
 
@@ -33,8 +33,8 @@ if ! oc whoami &> /dev/null; then
 fi
 
 echo "Checking if images exist..."
-oc get imagestream app-server -n $NAMESPACE &>/dev/null || { echo "ERROR: app-server image not found. Run ./deploy/build-images.sh app-server first"; exit 1; }
-oc get imagestream ace-controller-pipeline -n $NAMESPACE &>/dev/null || { echo "ERROR: ace-controller-pipeline image not found. Run ./deploy/build-images.sh ace-controller-pipeline first"; exit 1; }
+oc get imagestream app-server -n $NAMESPACE &>/dev/null || { echo "ERROR: app-server image not found. Run ./openshift/build-images.sh app-server first"; exit 1; }
+oc get imagestream ace-controller-pipeline -n $NAMESPACE &>/dev/null || { echo "ERROR: ace-controller-pipeline image not found. Run ./openshift/build-images.sh ace-controller-pipeline first"; exit 1; }
 
 # Build Helm set args for API keys (optional env vars)
 SET_ARGS=(
